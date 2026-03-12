@@ -1,0 +1,91 @@
+<mat-card class="teams-card">
+
+  <!-- Card Header -->
+  <mat-card-header>
+    <div mat-card-avatar class="teams-avatar">
+      <mat-icon>groups</mat-icon>
+    </div>
+    <mat-card-title>Teams Inbox</mat-card-title>
+    <mat-card-subtitle>
+      Tickets created from Microsoft Teams channel messages
+    </mat-card-subtitle>
+
+    <!-- Refresh button -->
+    <button mat-icon-button
+            class="refresh-btn"
+            (click)="refresh()"
+            [disabled]="isLoading"
+            title="Refresh tickets">
+      <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+    </button>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content class="card-content">
+
+    <!-- Error state -->
+    <div class="error-state" *ngIf="errorMessage">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ errorMessage }}</p>
+      <small>Start the backend: <code>cd backend && npm install && npm start</code></small>
+    </div>
+
+    <!-- Loading state -->
+    <div class="loading-state" *ngIf="isLoading && !errorMessage">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading tickets from backend…</p>
+    </div>
+
+    <!-- Empty state — no error, not loading, no tickets -->
+    <div class="empty-state"
+         *ngIf="!isLoading && !errorMessage && tickets.length === 0">
+      <mat-icon>inbox</mat-icon>
+      <p>No Teams tickets yet.</p>
+      <small>Post a message in your Teams channel and Power Automate will send it here.</small>
+    </div>
+
+    <!-- Ticket list -->
+    <div class="ticket-item"
+         *ngFor="let ticket of tickets">
+
+      <!-- Row: ID + priority badge + source tag -->
+      <div class="ticket-row">
+        <span class="ticket-id">{{ ticket.id }}</span>
+
+        <span class="priority-badge"
+              [style.background-color]="priorityColor[ticket.priority]">
+          <mat-icon>{{ priorityIcon[ticket.priority] }}</mat-icon>
+          {{ ticket.priority }}
+        </span>
+
+        <span class="source-badge">
+          <mat-icon>groups</mat-icon>
+          {{ ticket.source }}
+        </span>
+      </div>
+
+      <!-- Title -->
+      <h4 class="ticket-title">{{ ticket.title }}</h4>
+
+      <!-- Description -->
+      <p class="ticket-desc">{{ ticket.description }}</p>
+
+      <!-- Footer: timestamp -->
+      <div class="ticket-footer">
+        <mat-icon>schedule</mat-icon>
+        <span>{{ ticket.createdAt | date:'MMM d, y, h:mm a' }}</span>
+      </div>
+
+      <mat-divider></mat-divider>
+    </div>
+
+  </mat-card-content>
+
+  <!-- Footer: auto-refresh notice -->
+  <mat-card-footer class="card-footer" *ngIf="!errorMessage">
+    <mat-icon>autorenew</mat-icon>
+    <span>Auto-refreshes every 30 seconds &nbsp;·&nbsp; {{ tickets.length }} ticket(s)</span>
+  </mat-card-footer>
+
+</mat-card>

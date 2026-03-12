@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, FormGroupDirective, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TicketService } from '../../services/ticket.service';
 import { Ticket } from '../../models/ticket.model';
@@ -10,6 +10,8 @@ import { Ticket } from '../../models/ticket.model';
   styleUrls: ['./ticket-form.component.css']
 })
 export class TicketFormComponent {
+
+  @ViewChild(FormGroupDirective) formDirective!: FormGroupDirective;
 
   /** Emitted after a ticket is successfully submitted */
   @Output() ticketSubmitted = new EventEmitter<void>();
@@ -60,7 +62,7 @@ export class TicketFormComponent {
   private handleSuccess(): void {
     this.isSubmitting = false;
     this.submitSuccess = true;
-    this.ticketForm.reset({ priority: 'Medium' });
+    this.formDirective.resetForm({ priority: 'Medium' });
     this.ticketSubmitted.emit();
     this.snackBar.open(
       'Ticket submitted! Message posted to Teams.',

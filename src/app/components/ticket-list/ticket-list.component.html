@@ -7,19 +7,65 @@
     </div>
     <mat-card-title>Submitted Tickets</mat-card-title>
     <mat-card-subtitle>
-      {{ tickets.length === 0 ? 'No tickets yet this session' : tickets.length + ' ticket(s) — latest first' }}
+      <ng-container *ngIf="allTickets.length === 0">No tickets yet</ng-container>
+      <ng-container *ngIf="allTickets.length > 0">
+        {{ tickets.length }} of {{ allTickets.length }} ticket(s)
+      </ng-container>
     </mat-card-subtitle>
   </mat-card-header>
 
   <mat-divider></mat-divider>
 
+  <!-- Filter Bar -->
+  <div class="filter-bar" *ngIf="allTickets.length > 0">
+
+    <mat-form-field appearance="outline" class="filter-search">
+      <mat-label>Search</mat-label>
+      <input matInput [(ngModel)]="searchText" placeholder="Title, description, name...">
+      <mat-icon matPrefix>search</mat-icon>
+      <button mat-icon-button matSuffix *ngIf="searchText" (click)="searchText = ''">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-select">
+      <mat-label>Priority</mat-label>
+      <mat-select [(ngModel)]="filterPriority">
+        <mat-option value="">All</mat-option>
+        <mat-option *ngFor="let p of priorities" [value]="p">{{ p }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-select">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="filterStatus">
+        <mat-option value="">All</mat-option>
+        <mat-option *ngFor="let s of statuses" [value]="s">{{ s }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button class="clear-btn"
+            *ngIf="searchText || filterPriority || filterStatus"
+            (click)="clearFilters()">
+      <mat-icon>filter_list_off</mat-icon> Clear
+    </button>
+
+  </div>
+
   <mat-card-content class="card-content">
 
-    <!-- Empty State -->
-    <div class="empty-state" *ngIf="tickets.length === 0">
+    <!-- Empty State — no tickets at all -->
+    <div class="empty-state" *ngIf="allTickets.length === 0">
       <mat-icon>inbox</mat-icon>
       <p>No tickets submitted yet.</p>
       <small>Create a ticket using the form on the left.</small>
+    </div>
+
+    <!-- Empty State — filters returned nothing -->
+    <div class="empty-state" *ngIf="allTickets.length > 0 && tickets.length === 0">
+      <mat-icon>search_off</mat-icon>
+      <p>No tickets match your filters.</p>
+      <small><a (click)="clearFilters()" class="clear-link">Clear filters</a></small>
     </div>
 
     <!-- Ticket Items -->
@@ -32,7 +78,14 @@
           <mat-icon>{{ priorityIcon[ticket.priority] }}</mat-icon>
           {{ ticket.priority }}
         </mat-chip-row>
-        <span class="ticket-status">{{ ticket.status }}</span>
+
+        <!-- Status Selector -->
+        <mat-select class="status-select"
+                    [ngClass]="statusClass(ticket.status)"
+                    [value]="ticket.status"
+                    (selectionChange)="updateStatus(ticket, $event.value)">
+          <mat-option *ngFor="let s of statuses" [value]="s">{{ s }}</mat-option>
+        </mat-select>
       </div>
 
       <!-- Title -->

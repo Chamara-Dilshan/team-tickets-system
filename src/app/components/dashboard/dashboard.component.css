@@ -4,7 +4,7 @@
   margin: 0 auto;
 }
 
-/* Header */
+/* ── Header ──────────────────────────────────────────────────────────────── */
 .dashboard-header {
   text-align: center;
   margin-bottom: 24px;
@@ -19,23 +19,57 @@
 
 .subtitle {
   color: #555;
-  margin: 0;
   font-size: 15px;
   max-width: 600px;
   margin: 0 auto;
 }
 
-/* Architecture flow banner */
+/* ── Section label ───────────────────────────────────────────────────────── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.outbound-label {
+  color: #1565c0;
+}
+
+.inbound-label {
+  color: #2e7d32;
+  margin-top: 32px;
+}
+
+.section-label mat-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+/* ── Architecture flow banner ────────────────────────────────────────────── */
 .arch-banner {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: #e3f2fd;
-  border: 1px solid #90caf9;
   border-radius: 10px;
   padding: 14px 24px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+}
+
+.outbound-banner {
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+}
+
+.inbound-banner {
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
 }
 
 .arch-step {
@@ -44,22 +78,32 @@
   gap: 6px;
   font-weight: 500;
   font-size: 14px;
+}
+
+.outbound-banner .arch-step {
   color: #1565c0;
 }
 
-.arch-step mat-icon {
-  font-size: 20px;
-  height: 20px;
-  width: 20px;
+.inbound-banner .arch-step {
+  color: #2e7d32;
+}
+
+.outbound-banner .arch-step mat-icon {
   color: #1976d2;
 }
 
+.inbound-banner .arch-step mat-icon {
+  color: #388e3c;
+}
+
 .arrow {
-  color: #90caf9;
   font-size: 20px;
 }
 
-/* Two-column grid */
+.outbound-banner .arrow { color: #90caf9; }
+.inbound-banner  .arrow { color: #a5d6a7; }
+
+/* ── Two-column grid for outbound section ───────────────────────────────── */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -67,17 +111,19 @@
   align-items: start;
 }
 
+/* ── Section divider ─────────────────────────────────────────────────────── */
+.section-divider {
+  margin: 36px 0 28px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
   .arch-banner {
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 8px;
-  }
-
-  .arrow {
-    transform: rotate(90deg);
   }
 }

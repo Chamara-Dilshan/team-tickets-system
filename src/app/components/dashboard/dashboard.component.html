@@ -1,16 +1,24 @@
 <div class="dashboard-container">
 
-  <!-- Header -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       MAIN HEADER
+  ════════════════════════════════════════════════════════════════════ -->
   <div class="dashboard-header">
-    <h2>Support Ticket Dashboard</h2>
+    <h2>Enterprise Ticket Dashboard</h2>
     <p class="subtitle">
-      Fill out the form to create a ticket. It will be automatically posted to your
-      Microsoft Teams channel via Power Automate.
+      Two-way Microsoft Teams integration — submit tickets to Teams or receive tickets from Teams.
     </p>
   </div>
 
-  <!-- Architecture info banner -->
-  <div class="arch-banner">
+  <!-- ═══════════════════════════════════════════════════════════════════
+       SECTION 1 — OUTBOUND: Angular → Power Automate → Teams
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="section-label outbound-label">
+    <mat-icon>upload</mat-icon>
+    <span>OUTBOUND — Submit tickets from the UI to Teams</span>
+  </div>
+
+  <div class="arch-banner outbound-banner">
     <div class="arch-step">
       <mat-icon>web</mat-icon>
       <span>Angular UI</span>
@@ -27,7 +35,6 @@
     </div>
   </div>
 
-  <!-- Two-column grid: form | list -->
   <div class="dashboard-grid">
     <div class="form-panel">
       <app-ticket-form (ticketSubmitted)="onTicketSubmitted()"></app-ticket-form>
@@ -36,5 +43,42 @@
       <app-ticket-list></app-ticket-list>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       SECTION DIVIDER
+  ════════════════════════════════════════════════════════════════════ -->
+  <mat-divider class="section-divider"></mat-divider>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       SECTION 2 — INBOUND: Teams → Power Automate → Backend API → Angular
+  ════════════════════════════════════════════════════════════════════ -->
+  <div class="section-label inbound-label">
+    <mat-icon>download</mat-icon>
+    <span>INBOUND — Receive tickets created in Teams</span>
+  </div>
+
+  <div class="arch-banner inbound-banner">
+    <div class="arch-step">
+      <mat-icon>groups</mat-icon>
+      <span>Teams Channel</span>
+    </div>
+    <mat-icon class="arrow">arrow_forward</mat-icon>
+    <div class="arch-step">
+      <mat-icon>bolt</mat-icon>
+      <span>Power Automate</span>
+    </div>
+    <mat-icon class="arrow">arrow_forward</mat-icon>
+    <div class="arch-step">
+      <mat-icon>dns</mat-icon>
+      <span>Backend API</span>
+    </div>
+    <mat-icon class="arrow">arrow_forward</mat-icon>
+    <div class="arch-step">
+      <mat-icon>web</mat-icon>
+      <span>Angular UI</span>
+    </div>
+  </div>
+
+  <app-teams-tickets></app-teams-tickets>
 
 </div>

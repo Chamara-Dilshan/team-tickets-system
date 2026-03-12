@@ -1,79 +1,124 @@
 # Teams Ticket System
-### Angular + Microsoft Power Automate + Microsoft Teams Integration Demo
+### Full-Circle Microsoft Teams + Power Automate + Angular Integration Demo
 
 ---
 
 ## System Architecture
 
-```
-┌─────────────────┐     HTTP POST      ┌──────────────────────┐     Teams API     ┌──────────────────┐
-│   Angular UI    │ ─────────────────► │  Power Automate Flow │ ────────────────► │  Teams Channel   │
-│  (localhost)    │   JSON payload     │  (HTTP Trigger)      │  formatted card   │  (Notification)  │
-└─────────────────┘                    └──────────────────────┘                   └──────────────────┘
-```
+This project demonstrates **two complementary flows** — an outbound flow and a reverse (inbound) flow:
 
-**How it works:**
-1. User fills the "Create Ticket" form in Angular
-2. Angular sends an HTTP POST with JSON to the Power Automate trigger URL
-3. Power Automate receives the request and formats a Teams message
-4. Teams channel receives a rich notification with ticket details
-5. Angular shows a success message and adds the ticket to the local list
+```
+╔══════════════════════════════════════════════════════════════════════════════════╗
+║  OUTBOUND FLOW  (Angular → Teams)                                                ║
+╠══════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                  ║
+║   ┌─────────────┐   HTTP POST    ┌──────────────────┐   Teams API  ┌──────────┐ ║
+║   │  Angular UI │ ─────────────► │  Power Automate  │ ───────────► │  Teams   │ ║
+║   │  (Form)     │   JSON ticket  │  (HTTP trigger)  │   message    │  Channel │ ║
+║   └─────────────┘                └──────────────────┘              └──────────┘ ║
+║                                                                                  ║
+╠══════════════════════════════════════════════════════════════════════════════════╣
+║  INBOUND FLOW  (Teams → Angular)              ← NEW reverse integration          ║
+╠══════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                  ║
+║   ┌──────────┐  new message  ┌──────────────────┐   HTTP POST  ┌─────────────┐  ║
+║   │  Teams   │ ────────────► │  Power Automate  │ ───────────► │  Node.js    │  ║
+║   │  Channel │  (trigger)    │  (channel watch) │   JSON body  │  Backend    │  ║
+║   └──────────┘               └──────────────────┘              └──────┬──────┘  ║
+║                                                                        │         ║
+║                                                         GET /api/tickets         ║
+║                                                                        │         ║
+║                                                                 ┌──────▼──────┐  ║
+║                                                                 │  Angular UI │  ║
+║                                                                 │  (Inbox)    │  ║
+║                                                                 └─────────────┘  ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+```
 
 ---
 
 ## Project Structure
 
 ```
-teams-ticket-system/
+team-tickets-system/
+├── backend/                          ← Node.js Express API (NEW)
+│   ├── server.js                     ← API endpoints (POST + GET /api/tickets)
+│   └── package.json
+│
 ├── src/
 │   ├── app/
 │   │   ├── components/
-│   │   │   ├── dashboard/           ← Main page layout with architecture banner
-│   │   │   ├── ticket-form/         ← Reactive form for ticket creation
-│   │   │   └── ticket-list/         ← Live list of submitted tickets
+│   │   │   ├── dashboard/            ← Layout shell — hosts both sections
+│   │   │   ├── ticket-form/          ← Outbound: submit ticket → Teams
+│   │   │   ├── ticket-list/          ← Outbound: show locally submitted tickets
+│   │   │   └── teams-tickets/        ← Inbound: show tickets from Teams (NEW)
 │   │   ├── models/
-│   │   │   └── ticket.model.ts      ← Ticket TypeScript interface
+│   │   │   └── ticket.model.ts       ← Ticket + TeamsTicket interfaces
 │   │   ├── services/
-│   │   │   └── ticket.service.ts    ← HTTP calls + BehaviorSubject state
-│   │   ├── app.module.ts
-│   │   ├── app-routing.module.ts
-│   │   └── app.component.*
+│   │   │   └── ticket.service.ts     ← HTTP + BehaviorSubject + backend calls
+│   │   └── app.module.ts
+│   │
 │   ├── environments/
-│   │   ├── environment.ts           ← ⚠️  Add your Power Automate URL here
+│   │   ├── environment.ts            ← powerAutomateUrl + backendApiUrl
 │   │   └── environment.prod.ts
-│   ├── index.html
-│   ├── main.ts
-│   └── styles.css
+│   └── ...
+│
+├── CLAUDE.md
 ├── angular.json
-├── package.json
-└── tsconfig.json
+└── package.json
 ```
 
 ---
 
-## Step 1: Install Dependencies
+## Ticket Data Models
+
+### Outbound (submitted from Angular UI)
+```typescript
+interface Ticket {
+  title:       string;
+  description: string;
+  priority:    'Low' | 'Medium' | 'High';
+  createdBy:   string;
+  id?:         string;        // Auto-generated: TKT-XXXXXX
+  createdAt?:  Date;
+  status?:     'Open' | 'In Progress' | 'Closed';
+}
+```
+
+### Inbound (received from Microsoft Teams via backend)
+```typescript
+interface TeamsTicket {
+  id:          string;        // Auto-generated by backend: TMS-XXXXXX
+  title:       string;
+  description: string;
+  priority:    'Low' | 'Medium' | 'High';
+  source:      string;        // Always "Microsoft Teams"
+  createdAt:   string;        // ISO 8601 timestamp
+}
+```
+
+---
+
+## Part 1 — Run the Angular App (Outbound Flow)
+
+### Install & start
 
 ```bash
 # Requires Node.js 18+ and Angular CLI 17+
 npm install -g @angular/cli
-
-# Install project dependencies
 npm install
+npm start
 ```
 
----
+Open **http://localhost:4200**
 
-## Step 2: Create the Power Automate Flow
+### Configure Power Automate (outbound — Angular → Teams)
 
-### 2.1 — Create the Flow
-1. Go to **[make.powerautomate.com](https://make.powerautomate.com)**
-2. Click **+ Create** → **Instant cloud flow**
+1. Go to [make.powerautomate.com](https://make.powerautomate.com)
+2. Click **+ Create → Instant cloud flow**
 3. Choose trigger: **"When an HTTP request is received"**
-4. Name the flow: `Teams Ticket Notification`
-5. Click **Create**
-
-### 2.2 — Configure the HTTP Trigger
-In the trigger step, click **"Use sample payload to generate schema"** and paste:
+4. Name the flow: `Angular Ticket Notification`
+5. In the trigger, click **"Use sample payload to generate schema"** and paste:
 
 ```json
 {
@@ -86,23 +131,17 @@ In the trigger step, click **"Use sample payload to generate schema"** and paste
 }
 ```
 
-Set **Method** to `POST`.
+6. Add a new step: **Post a message in a chat or channel** (Microsoft Teams)
 
-### 2.3 — Add a Teams Action
-Click **+ New step** and search for **Microsoft Teams**.
+| Field   | Value                        |
+|---------|------------------------------|
+| Post as | Flow bot                     |
+| Post in | Channel                      |
+| Team    | *(your team)*                |
+| Channel | *(your channel)*             |
+| Message | *(see below)*                |
 
-Select: **Post a message in a chat or channel**
-
-Configure:
-| Field      | Value                          |
-|------------|--------------------------------|
-| Post as    | Flow bot                       |
-| Post in    | Channel                        |
-| Team       | *(select your team)*           |
-| Channel    | *(select your channel)*        |
-| Message    | *(see below)*                  |
-
-**Message body** (use the Expression editor for dynamic content):
+**Message body:**
 ```
 🎫 NEW SUPPORT TICKET
 
@@ -114,70 +153,128 @@ Configure:
 **Status:** @{triggerBody()?['status']}
 ```
 
-### 2.4 — Save and Copy the Trigger URL
-1. Click **Save**
-2. Open the trigger step — copy the **HTTP POST URL** (it looks like `https://prod-xx.westus.logic.azure.com/...`)
+7. Save the flow and copy the **HTTP POST URL** from the trigger step.
 
----
-
-## Step 3: Connect Angular to Power Automate
-
-Open `src/environments/environment.ts` and paste your URL:
-
+8. Paste the URL in `src/environments/environment.ts`:
 ```typescript
 export const environment = {
   production: false,
-  powerAutomateUrl: 'https://prod-xx.westus.logic.azure.com/workflows/...'
+  powerAutomateUrl: 'https://prod-xx.westus.logic.azure.com/workflows/...',
+  backendApiUrl: 'http://localhost:3000'
 };
 ```
 
 ---
 
-## Step 4: Run the Application
+## Part 2 — Run the Backend (Inbound Flow)
+
+### Install & start
 
 ```bash
-ng serve
+cd backend
+npm install
+npm start
 ```
 
-Open your browser at **[http://localhost:4200](http://localhost:4200)**
+The API starts on **http://localhost:3000**
+
+```
+Ticket API running → http://localhost:3000
+  POST /api/tickets    (Power Automate sends here)
+  GET  /api/tickets    (Angular reads from here)
+  GET  /health         (health check)
+```
+
+### Test the backend manually
+
+```bash
+# POST a test ticket
+curl -X POST http://localhost:3000/api/tickets \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Login Bug","description":"User cannot login to the portal","priority":"High","source":"Microsoft Teams"}'
+
+# GET all tickets
+curl http://localhost:3000/api/tickets
+```
 
 ---
 
-## CORS Note
+## Part 3 — Power Automate Flow (Inbound — Teams → Backend)
 
-Power Automate HTTP triggers may not include CORS headers, which can cause browser errors for direct calls from `localhost`. The Angular service already handles HTTP 202 responses gracefully.
+This is the **reverse integration** flow.
 
-For a CORS-free local setup, create `proxy.conf.json` in the project root:
+### Flow Trigger
 
+1. Go to [make.powerautomate.com](https://make.powerautomate.com)
+2. Click **+ Create → Automated cloud flow**
+3. Search for trigger: **"When a new message is added in a channel"** (Microsoft Teams)
+4. Name the flow: `Teams Channel → Ticket API`
+5. Select your **Team** and **Channel**
+6. Click **Create**
+
+### Flow Steps
+
+#### Step 1 — Parse the message body
+
+Add action: **Compose**
+
+Use the following expression to build the JSON payload.
+
+> In the real flow, you can use string parsing expressions to extract structured data from the message body. For simplicity, the flow below uses the full message as the description.
+
+#### Step 2 — HTTP POST to backend
+
+Add action: **HTTP**
+
+| Field   | Value                                    |
+|---------|------------------------------------------|
+| Method  | POST                                     |
+| URI     | `http://YOUR_BACKEND_IP:3000/api/tickets` |
+| Headers | `Content-Type: application/json`         |
+| Body    | *(see below)*                            |
+
+**Body** (use dynamic content expressions):
 ```json
 {
-  "/pa-trigger": {
-    "target": "https://prod-xx.westus.logic.azure.com",
-    "secure": true,
-    "changeOrigin": true,
-    "pathRewrite": { "^/pa-trigger": "" }
-  }
+  "title": "Teams Ticket",
+  "description": "@{triggerBody()?['body']?['content']}",
+  "priority": "Medium",
+  "source": "Microsoft Teams"
 }
 ```
 
-Then update `environment.ts` to use `/pa-trigger/workflows/...` and serve with:
-```bash
-ng serve --proxy-config proxy.conf.json
+> **Note for local development:** Power Automate runs in the cloud, so `localhost:3000` is not reachable. Use **ngrok** to expose your local backend:
+> ```bash
+> npx ngrok http 3000
+> # Copy the https URL (e.g. https://abc123.ngrok.io)
+> # Use that as the URI in the HTTP action
+> ```
+
+### Advanced: Parse structured messages
+
+If Teams messages follow this format:
+```
+NEW TICKET
+Title: Login Bug
+Description: User cannot login to the portal
+Priority: High
 ```
 
----
+Use Power Automate **Compose** and **string expressions** to extract each field:
 
-## Ticket Data Model
+```
+Title:       @{trim(last(split(first(filter(split(triggerBody()?['body']?['content'], '\n'), startsWith(item(), 'Title:'))), ':')))}
+Description: @{trim(last(split(first(filter(split(triggerBody()?['body']?['content'], '\n'), startsWith(item(), 'Description:'))), ':')))}
+Priority:    @{trim(last(split(first(filter(split(triggerBody()?['body']?['content'], '\n'), startsWith(item(), 'Priority:'))), ':')))}
+```
 
-```typescript
-interface Ticket {
-  title:       string;              // e.g. "Login page not loading"
-  description: string;              // Detailed description
-  priority:    'Low' | 'Medium' | 'High';
-  createdBy:   string;              // Submitter's name
-  id?:         string;              // Auto-generated: TKT-XXXXXX
-  createdAt?:  Date;                // Auto-set on submit
-  status?:     'Open' | 'In Progress' | 'Closed';  // Defaults to 'Open'
+Then reference those compose outputs in the HTTP body:
+```json
+{
+  "title":       "@{outputs('Parse_Title')}",
+  "description": "@{outputs('Parse_Description')}",
+  "priority":    "@{outputs('Parse_Priority')}",
+  "source":      "Microsoft Teams"
 }
 ```
 
@@ -185,16 +282,88 @@ interface Ticket {
 
 ## Example Teams Channel Message
 
-```
-🎫 NEW SUPPORT TICKET
+Post this exact format in your watched Teams channel:
 
-ID:          TKT-ABC123
-Title:       Login page not loading after deployment
-Description: Users are unable to access the login page. The error occurs
-             on both mobile and desktop browsers after today's release.
-Priority:    High
-Created By:  Jane Smith
-Status:      Open
+```
+NEW TICKET
+Title: Login Bug
+Description: User cannot login to the portal after the latest deployment
+Priority: High
+```
+
+Power Automate will detect it, parse it, and POST to your backend:
+
+```json
+{
+  "title": "Login Bug",
+  "description": "User cannot login to the portal after the latest deployment",
+  "priority": "High",
+  "source": "Microsoft Teams"
+}
+```
+
+Angular will display it in the **Teams Inbox** section within 30 seconds (auto-refresh).
+
+---
+
+## Step-by-Step: Run Everything Locally
+
+```
+Terminal 1 — Backend
+─────────────────────────────────────────
+cd backend
+npm install
+npm start
+→ API running at http://localhost:3000
+
+Terminal 2 — Angular
+─────────────────────────────────────────
+npm install       (from project root)
+npm start
+→ App running at http://localhost:4200
+
+Terminal 3 — ngrok (only needed for Power Automate)
+─────────────────────────────────────────
+npx ngrok http 3000
+→ Forwarding: https://abc123.ngrok.io → localhost:3000
+  (paste this URL into the Power Automate HTTP action)
+```
+
+---
+
+## Backend API Reference
+
+| Method | Endpoint       | Description                          |
+|--------|----------------|--------------------------------------|
+| POST   | /api/tickets   | Save a ticket (called by Power Automate) |
+| GET    | /api/tickets   | Return all tickets (called by Angular) |
+| DELETE | /api/tickets   | Clear all tickets (dev utility)      |
+| GET    | /health        | Health check                         |
+
+### POST /api/tickets — Request body
+
+```json
+{
+  "title": "Login Bug",
+  "description": "User cannot login to the portal",
+  "priority": "High",
+  "source": "Microsoft Teams"
+}
+```
+
+### GET /api/tickets — Response
+
+```json
+[
+  {
+    "id": "TMS-A3B7F2",
+    "title": "Login Bug",
+    "description": "User cannot login to the portal",
+    "priority": "High",
+    "source": "Microsoft Teams",
+    "createdAt": "2026-03-13T10:30:00.000Z"
+  }
+]
 ```
 
 ---
@@ -203,9 +372,32 @@ Status:      Open
 
 | File | Purpose |
 |------|---------|
-| `src/app/models/ticket.model.ts` | TypeScript interface for Ticket |
-| `src/app/services/ticket.service.ts` | HTTP POST to Power Automate + RxJS state |
-| `src/app/components/ticket-form/*` | Reactive form with validation |
-| `src/app/components/ticket-list/*` | Live-updating list via BehaviorSubject |
-| `src/app/components/dashboard/*` | Layout with architecture flow banner |
-| `src/environments/environment.ts` | Power Automate URL config |
+| `backend/server.js` | Express API — receives tickets from Power Automate, serves to Angular |
+| `backend/package.json` | Backend dependencies (express, cors) |
+| `src/app/models/ticket.model.ts` | `Ticket` (outbound) + `TeamsTicket` (inbound) interfaces |
+| `src/app/services/ticket.service.ts` | HTTP POST to Power Automate + GET from backend API |
+| `src/environments/environment.ts` | `powerAutomateUrl` + `backendApiUrl` config |
+| `src/app/components/ticket-form/` | Reactive form — submits tickets outbound to Teams |
+| `src/app/components/ticket-list/` | Live list of outbound tickets with filters |
+| `src/app/components/teams-tickets/` | Inbound Teams inbox — polls backend every 30s |
+| `src/app/components/dashboard/` | Layout shell — hosts both outbound + inbound sections |
+| `src/app/app.module.ts` | All Angular Material + module imports |
+
+---
+
+## Features
+
+**Outbound (Angular → Teams):**
+- Reactive form with validation — auto-generates ID, timestamp, and Open status
+- Sends ticket to Teams via Power Automate HTTP trigger
+- Persisted in `localStorage` — survives page refresh
+- Inline status updates (Open / In Progress / Closed)
+- Filter by priority, status, or full-text search
+
+**Inbound (Teams → Angular):**
+- Power Automate watches Teams channel for new messages
+- Flow extracts ticket data and POSTs to the Node.js backend
+- Angular polls the backend every 30 seconds
+- Manual refresh button available
+- Priority color badges, source tag, timestamp display
+- Clear error messages if backend is offline
