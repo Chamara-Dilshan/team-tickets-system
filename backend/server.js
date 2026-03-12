@@ -28,6 +28,11 @@ function validatePriority(priority) {
   return 'Medium'; // safe default
 }
 
+// Strip HTML tags that Teams sends in message content
+function stripHtml(str) {
+  return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+
 // ── Routes ─────────────────────────────────────────────────────────────────
 
 /**
@@ -46,8 +51,8 @@ app.post('/api/tickets', (req, res) => {
 
   const ticket = {
     id:          generateId(),
-    title:       title.trim(),
-    description: description.trim(),
+    title:       stripHtml(title),
+    description: stripHtml(description),
     priority:    validatePriority(priority),
     source:      source || 'Microsoft Teams',
     createdAt:   new Date().toISOString()

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription, interval } from 'rxjs';
-import { switchMap, startWith } from 'rxjs/operators';
+import { Subscription, interval, of } from 'rxjs';
+import { switchMap, startWith, catchError } from 'rxjs/operators';
 import { TicketService } from '../../services/ticket.service';
 import { TeamsTicket } from '../../models/ticket.model';
 
@@ -40,19 +40,22 @@ export class TeamsTicketsComponent implements OnInit, OnDestroy {
         switchMap(() => {
           this.isLoading = true;
           this.errorMessage = '';
-          return this.ticketService.getTeamsTickets();
+          return this.ticketService.getTeamsTickets().pipe(
+            catchError((err) => {
+              // Handle error inside switchMap so the polling interval survives
+              this.isLoading = false;
+              this.errorMessage =
+                'Could not reach the backend API. Make sure the Node.js server is running on port 3000.';
+              console.error('[TeamsTickets] API error:', err);
+              return of(null); // return null so the outer subscription stays alive
+            })
+          );
         })
       )
-      .subscribe({
-        next: (data) => {
+      .subscribe((data) => {
+        if (data !== null) {
           this.tickets = data;
           this.isLoading = false;
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.errorMessage =
-            'Could not reach the backend API. Make sure the Node.js server is running on port 3000.';
-          console.error('[TeamsTickets] API error:', err);
         }
       });
   }
