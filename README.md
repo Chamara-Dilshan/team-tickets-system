@@ -160,15 +160,20 @@ Open **http://localhost:4200**
 export const environment = {
   production: false,
   powerAutomateUrl: 'https://prod-xx.westus.logic.azure.com/workflows/...',
-  backendApiUrl: 'http://localhost:3000'
+  backendApiUrl: 'https://ticket-backend-tezc.onrender.com'  // or localhost:3000 for local dev
 };
 ```
 
 ---
 
-## Part 2 — Run the Backend (Inbound Flow)
+## Part 2 — Backend (Inbound Flow)
 
-### Install & start
+### Deployed on Render
+The backend is live at: `https://ticket-backend-tezc.onrender.com`
+
+> Free tier spins down after 15 min idle. First request after idle takes ~30s to wake up.
+
+### Run locally (optional)
 
 ```bash
 cd backend
@@ -333,12 +338,16 @@ npx ngrok http 3000
 
 ## Backend API Reference
 
+**Base URL:** `https://ticket-backend-tezc.onrender.com`
+
 | Method | Endpoint       | Description                          |
 |--------|----------------|--------------------------------------|
 | POST   | /api/tickets   | Save a ticket (called by Power Automate) |
 | GET    | /api/tickets   | Return all tickets (called by Angular) |
 | DELETE | /api/tickets   | Clear all tickets (dev utility)      |
 | GET    | /health        | Health check                         |
+
+> Teams sends message content as HTML. The backend automatically strips all HTML tags before saving.
 
 ### POST /api/tickets — Request body
 
