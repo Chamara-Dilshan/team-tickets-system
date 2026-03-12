@@ -1,0 +1,58 @@
+<mat-card class="list-card">
+
+  <!-- Card Header -->
+  <mat-card-header>
+    <div mat-card-avatar class="card-avatar">
+      <mat-icon>list_alt</mat-icon>
+    </div>
+    <mat-card-title>Submitted Tickets</mat-card-title>
+    <mat-card-subtitle>
+      {{ tickets.length === 0 ? 'No tickets yet this session' : tickets.length + ' ticket(s) — latest first' }}
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content class="card-content">
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="tickets.length === 0">
+      <mat-icon>inbox</mat-icon>
+      <p>No tickets submitted yet.</p>
+      <small>Create a ticket using the form on the left.</small>
+    </div>
+
+    <!-- Ticket Items -->
+    <div class="ticket-item" *ngFor="let ticket of tickets">
+
+      <!-- Ticket Header Row -->
+      <div class="ticket-row">
+        <span class="ticket-id">{{ ticket.id }}</span>
+        <mat-chip-row [color]="priorityColor[ticket.priority]" highlighted>
+          <mat-icon>{{ priorityIcon[ticket.priority] }}</mat-icon>
+          {{ ticket.priority }}
+        </mat-chip-row>
+        <span class="ticket-status">{{ ticket.status }}</span>
+      </div>
+
+      <!-- Title -->
+      <h4 class="ticket-title">{{ ticket.title }}</h4>
+
+      <!-- Description -->
+      <p class="ticket-desc">{{ ticket.description }}</p>
+
+      <!-- Footer: created by + timestamp -->
+      <div class="ticket-footer">
+        <mat-icon>person_outline</mat-icon>
+        <span>{{ ticket.createdBy }}</span>
+        <span class="spacer"></span>
+        <mat-icon>schedule</mat-icon>
+        <span>{{ ticket.createdAt | date:'MMM d, y, h:mm a' }}</span>
+      </div>
+
+      <mat-divider></mat-divider>
+    </div>
+
+  </mat-card-content>
+
+</mat-card>

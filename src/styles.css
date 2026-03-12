@@ -1,0 +1,29 @@
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background: #f5f7fa;
+}
+
+/* Snackbar theme overrides */
+.success-snackbar {
+  background: #2e7d32 !important;
+  color: white !important;
+}
+
+.success-snackbar .mat-simple-snackbar-action {
+  color: #a5d6a7 !important;
+}
+
+.error-snackbar {
+  background: #c62828 !important;
+  color: white !important;
+}
+
+.error-snackbar .mat-simple-snackbar-action {
+  color: #ef9a9a !important;
+}

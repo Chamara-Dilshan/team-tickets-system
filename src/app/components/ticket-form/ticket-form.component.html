@@ -1,0 +1,75 @@
+<mat-card class="form-card">
+
+  <!-- Card Header -->
+  <mat-card-header>
+    <div mat-card-avatar class="card-avatar">
+      <mat-icon>add_circle</mat-icon>
+    </div>
+    <mat-card-title>Create New Ticket</mat-card-title>
+    <mat-card-subtitle>Ticket will be automatically posted to Microsoft Teams</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content class="card-content">
+
+    <!-- Success Banner -->
+    <div class="success-banner" *ngIf="submitSuccess">
+      <mat-icon>check_circle</mat-icon>
+      <span>Ticket submitted successfully! Check your Teams channel.</span>
+    </div>
+
+    <!-- Ticket Form -->
+    <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+
+      <!-- Title -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Title</mat-label>
+        <input matInput formControlName="title"
+               placeholder="e.g. Login page not loading after deployment">
+        <mat-icon matPrefix>title</mat-icon>
+        <mat-error>{{ getError('title') }}</mat-error>
+      </mat-form-field>
+
+      <!-- Description -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" rows="4"
+                  placeholder="Describe the issue in detail..."></textarea>
+        <mat-icon matPrefix>description</mat-icon>
+        <mat-error>{{ getError('description') }}</mat-error>
+      </mat-form-field>
+
+      <!-- Priority -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          <mat-option *ngFor="let p of priorities" [value]="p">
+            <span [class]="'priority-option priority-' + p.toLowerCase()">{{ p }}</span>
+          </mat-option>
+        </mat-select>
+        <mat-icon matPrefix>flag</mat-icon>
+        <mat-error>{{ getError('priority') }}</mat-error>
+      </mat-form-field>
+
+      <!-- Created By -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Your Name</mat-label>
+        <input matInput formControlName="createdBy"
+               placeholder="e.g. Jane Smith">
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error>{{ getError('createdBy') }}</mat-error>
+      </mat-form-field>
+
+      <!-- Submit Button -->
+      <button mat-raised-button color="primary" type="submit"
+              class="submit-btn" [disabled]="isSubmitting">
+        <mat-spinner *ngIf="isSubmitting" diameter="20" class="btn-spinner"></mat-spinner>
+        <mat-icon *ngIf="!isSubmitting">send</mat-icon>
+        <span>{{ isSubmitting ? 'Sending to Teams...' : 'Submit Ticket' }}</span>
+      </button>
+
+    </form>
+  </mat-card-content>
+
+</mat-card>

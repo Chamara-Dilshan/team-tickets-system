@@ -1,0 +1,83 @@
+.dashboard-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #1565c0;
+}
+
+.subtitle {
+  color: #555;
+  margin: 0;
+  font-size: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Architecture flow banner */
+.arch-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 10px;
+  padding: 14px 24px;
+  margin-bottom: 28px;
+}
+
+.arch-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1565c0;
+}
+
+.arch-step mat-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+  color: #1976d2;
+}
+
+.arrow {
+  color: #90caf9;
+  font-size: 20px;
+}
+
+/* Two-column grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .arch-banner {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .arrow {
+    transform: rotate(90deg);
+  }
+}

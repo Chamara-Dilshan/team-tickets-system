@@ -1,0 +1,40 @@
+<div class="dashboard-container">
+
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h2>Support Ticket Dashboard</h2>
+    <p class="subtitle">
+      Fill out the form to create a ticket. It will be automatically posted to your
+      Microsoft Teams channel via Power Automate.
+    </p>
+  </div>
+
+  <!-- Architecture info banner -->
+  <div class="arch-banner">
+    <div class="arch-step">
+      <mat-icon>web</mat-icon>
+      <span>Angular UI</span>
+    </div>
+    <mat-icon class="arrow">arrow_forward</mat-icon>
+    <div class="arch-step">
+      <mat-icon>bolt</mat-icon>
+      <span>Power Automate</span>
+    </div>
+    <mat-icon class="arrow">arrow_forward</mat-icon>
+    <div class="arch-step">
+      <mat-icon>groups</mat-icon>
+      <span>Teams Channel</span>
+    </div>
+  </div>
+
+  <!-- Two-column grid: form | list -->
+  <div class="dashboard-grid">
+    <div class="form-panel">
+      <app-ticket-form (ticketSubmitted)="onTicketSubmitted()"></app-ticket-form>
+    </div>
+    <div class="list-panel">
+      <app-ticket-list></app-ticket-list>
+    </div>
+  </div>
+
+</div>
