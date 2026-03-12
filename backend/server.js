@@ -28,9 +28,18 @@ function validatePriority(priority) {
   return 'Medium'; // safe default
 }
 
-// Strip HTML tags that Teams sends in message content
+// Strip HTML tags and decode entities that Teams sends in message content
 function stripHtml(str) {
-  return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  return str
+    .replace(/<[^>]*>/g, '')   // remove <tags>
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/<[^>]*>/g, '')   // remove any tags exposed after entity decoding
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // ── Routes ─────────────────────────────────────────────────────────────────
