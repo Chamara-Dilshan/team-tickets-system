@@ -231,24 +231,26 @@ Use the following expression to build the JSON payload.
 
 Add action: **HTTP**
 
-| Field   | Value                                    |
-|---------|------------------------------------------|
-| Method  | POST                                     |
-| URI     | `http://YOUR_BACKEND_IP:3000/api/tickets` |
-| Headers | `Content-Type: application/json`         |
-| Body    | *(see below)*                            |
+| Field   | Value                                                      |
+|---------|------------------------------------------------------------|
+| Method  | POST                                                       |
+| URI     | `https://ticket-backend-tezc.onrender.com/api/tickets`    |
+| Headers | `Content-Type: application/json`                           |
+| Body    | *(see below)*                                              |
 
 **Body** (use dynamic content expressions):
 ```json
 {
   "title": "Teams Ticket",
   "description": "@{triggerBody()?['body']?['content']}",
-  "priority": "Medium",
+  "priority": "@{if(contains(triggerBody()?['body']?['content'], 'High'), 'High', if(contains(triggerBody()?['body']?['content'], 'Low'), 'Low', 'Medium'))}",
   "source": "Microsoft Teams"
 }
 ```
 
-> **Note for local development:** Power Automate runs in the cloud, so `localhost:3000` is not reachable. Use **ngrok** to expose your local backend:
+> **Priority is auto-detected** from the message content — if the message contains `High` it sends `High`, `Low` sends `Low`, anything else defaults to `Medium`.
+
+> **Note for local development:** Power Automate runs in the cloud, so `localhost:3000` is not reachable. Either deploy the backend (recommended) or use **ngrok**:
 > ```bash
 > npx ngrok http 3000
 > # Copy the https URL (e.g. https://abc123.ngrok.io)
@@ -327,11 +329,13 @@ npm install       (from project root)
 npm start
 → App running at http://localhost:4200
 
-Terminal 3 — ngrok (only needed for Power Automate)
+Terminal 3 — ngrok (optional — only if backend is local AND Power Automate needs to reach it)
 ─────────────────────────────────────────
 npx ngrok http 3000
 → Forwarding: https://abc123.ngrok.io → localhost:3000
   (paste this URL into the Power Automate HTTP action)
+
+Not needed if using the deployed backend at https://ticket-backend-tezc.onrender.com
 ```
 
 ---
@@ -347,7 +351,7 @@ npx ngrok http 3000
 | DELETE | /api/tickets   | Clear all tickets (dev utility)      |
 | GET    | /health        | Health check                         |
 
-> Teams sends message content as HTML. The backend automatically strips all HTML tags before saving.
+> Teams sends message content as HTML (e.g. `<p><span style="...">text</span></p>`). The backend's `stripHtml()` function removes all tags and decodes HTML entities (`&lt;`, `&gt;`, `&amp;`, `&nbsp;`) before saving.
 
 ### POST /api/tickets — Request body
 
